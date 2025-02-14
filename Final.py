@@ -22,7 +22,7 @@ def load_whisper_model():
 
 # 🔹 Transcribe and Translate Urdu to English
 def transcribe_audio(model, audio_file):
-    result = model.transcribe(audio_file, task="translate", language="ur")  # Ensure Urdu detection
+    result = model.transcribe(audio_file, task="translate", language="ur") 
     return result["text"]
 
 # 🔹 Clean Transcription (Remove Filler Words)
@@ -64,6 +64,25 @@ def extract_keywords(transcription):
     
     except Exception as e:
         return f"❌ Error extracting keywords: {str(e)}"
+def generate_image_prompt_gemini(headline):
+    
+    model = genai.GenerativeModel('gemini-pro')
+    prompt = f"""
+    Convert the following news headline into a highly detailed visual scene description for AI image generation. 
+    Include the setting, action, emotions, and atmosphere.
+
+    Headline: "{headline}"
+    
+    Image prompt:
+    """
+    
+    response = model.generate_content(prompt)
+    
+    if response and response.candidates:
+        return response.candidates[0].content.parts[0].text.strip()
+    
+    return "❌ Error generating image prompt"
+
 
 # 🔹 Generate AI Image Using FAL AI
 def generate_image(prompt):
@@ -109,7 +128,7 @@ if uploaded_file is not None:
     neutral_headline = headline_list[0] if len(headline_list) > 0 else ""
 
     with st.spinner("🔄 Generating image prompt..."):
-        image_prompt = neutral_headline
+        image_prompt = generate_image_prompt_gemini(neutral_headline)
     
     if "❌" in image_prompt:
         st.error(image_prompt)
