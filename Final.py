@@ -27,12 +27,23 @@ def load_whisper_model():
 def download_audio(youtube_url):
     ydl_opts = {
         'format': 'bestaudio/best',
+        'noplaylist': True,
+        'geo_bypass': True,
+        'ignoreerrors': True,
+        'ffmpeg_location': '/usr/bin/ffmpeg',  # Explicitly set ffmpeg path
         'postprocessors': [{'key': 'FFmpegExtractAudio', 'preferredcodec': 'mp3', 'preferredquality': '192'}],
-        'outtmpl': 'temp_audio.%(ext)s'
+        'outtmpl': '/tmp/temp_audio.%(ext)s',  # Use /tmp to avoid permission issues
+        'quiet': True,
     }
-    with yt_dlp.YoutubeDL(ydl_opts) as ydl:
-        ydl.download([youtube_url])
-    return "temp_audio.mp3"
+    try:
+        with yt_dlp.YoutubeDL(ydl_opts) as ydl:
+            info_dict = ydl.extract_info(youtube_url, download=True)
+            file_path = ydl.prepare_filename(info_dict).replace('.webm', '.mp3').replace('.m4a', '.mp3')
+        return file_path
+    except yt_dlp.utils.DownloadError as e:
+        print(f"❌ Error downloading audio: {e}")
+        return None
+
 
 # 🔹 Transcribe and Translate Urdu to English
 def transcribe_audio(model, audio_file):
