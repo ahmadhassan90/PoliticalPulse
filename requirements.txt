@@ -5,6 +5,7 @@ google-generativeai
 fal_client
 pillow
 requests
-imageio[ffmpeg]
+ffmpeg
+
 
 
