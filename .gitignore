@@ -1,0 +1,2 @@
+# Ignore API keys and secrets
+.streamlit/secrets.toml

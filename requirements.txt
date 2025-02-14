@@ -1,0 +1,7 @@
+streamlit
+openai-whisper
+yt-dlp
+google-generativeai
+fal_client
+pillow
+requests
