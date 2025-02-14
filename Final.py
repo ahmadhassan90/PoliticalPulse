@@ -8,6 +8,7 @@ import re
 from PIL import Image
 import requests
 from io import BytesIO
+import subprocess
 
 FAL_KEY = st.secrets["FAL_KEY"]
 GEMINI_API_KEY = st.secrets["GEMINI_API_KEY"]
@@ -23,8 +24,16 @@ genai.configure(api_key=GEMINI_API_KEY)
 def load_whisper_model():
     return whisper.load_model("small")  # Change "medium" to "large" if needed
 
+def install_ffmpeg():
+    try:
+        subprocess.run(["apt-get", "update"], check=True)
+        subprocess.run(["apt-get", "install", "-y", "ffmpeg"], check=True)
+    except Exception as e:
+        print(f"❌ Error installing FFmpeg: {e}")
+
 # 🔹 Download Audio from YouTube
 def download_audio(youtube_url):
+    install_ffmpeg() 
     ydl_opts = {
         'format': 'bestaudio/best',
         'noplaylist': True,
