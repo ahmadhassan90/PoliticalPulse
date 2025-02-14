@@ -9,6 +9,10 @@ from PIL import Image
 import requests
 from io import BytesIO
 import subprocess
+import imageio_ffmpeg
+
+FFMPEG_PATH = imageio_ffmpeg.get_ffmpeg_binary()
+
 
 FAL_KEY = st.secrets["FAL_KEY"]
 GEMINI_API_KEY = st.secrets["GEMINI_API_KEY"]
@@ -24,26 +28,17 @@ genai.configure(api_key=GEMINI_API_KEY)
 def load_whisper_model():
     return whisper.load_model("small")  # Change "medium" to "large" if needed
 
-def install_ffmpeg():
-    try:
-        subprocess.run(["apt-get", "update"], check=True)
-        subprocess.run(["apt-get", "install", "-y", "ffmpeg"], check=True)
-    except Exception as e:
-        print(f"❌ Error installing FFmpeg: {e}")
 
 # 🔹 Download Audio from YouTube
 def download_audio(youtube_url):
-    install_ffmpeg() 
+    
     ydl_opts = {
-        'format': 'bestaudio/best',
-        'noplaylist': True,
-        'geo_bypass': True,
-        'ignoreerrors': True,
-        'ffmpeg_location': '/usr/bin/ffmpeg',  # Explicitly set ffmpeg path
-        'postprocessors': [{'key': 'FFmpegExtractAudio', 'preferredcodec': 'mp3', 'preferredquality': '192'}],
-        'outtmpl': '/tmp/temp_audio.%(ext)s',  # Use /tmp to avoid permission issues
-        'quiet': True,
-    }
+    'format': 'bestaudio/best',
+    'ffmpeg_location': FFMPEG_PATH,  # Use the Python-installed ffmpeg
+    'postprocessors': [{'key': 'FFmpegExtractAudio', 'preferredcodec': 'mp3', 'preferredquality': '192'}],
+    'outtmpl': 'temp_audio.%(ext)s'
+}
+
     try:
         with yt_dlp.YoutubeDL(ydl_opts) as ydl:
             info_dict = ydl.extract_info(youtube_url, download=True)
